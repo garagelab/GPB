@@ -28,7 +28,7 @@ USER_AGENT = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_3; en-US) AppleWebK
 DEFAULT_REQUEST_HEADERS = {'Accept-Language':'es'}
 
 #ITEM_PIPELINES = ['gpbscraper.pipelines.ItemCounterPipeline', 'gpbscraper.pipelines.ComprasPersisterPipeline']
-ITEM_PIPELINES = ['gpbscraper.pipelines.ComprasPersisterPipeline']
+#ITEM_PIPELINES = ['gpbscraper.pipelines.ComprasPersisterPipeline']
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gpbweb.settings')
 
@@ -40,3 +40,9 @@ RANDOMIZE_DOWNLOAD_DELAY = True
 DOWNLOAD_DELAY = 1
 
 LOG_LEVEL = 'DEBUG'
+
+FEED_EXPORTERS = {
+   'typedjsonlines': 'gpbscraper.exporters.TypedJsonLinesItemExporter'
+}
+FEED_FORMAT = 'typedjsonlines'
+FEED_URI = 'gpbscraper-%(name)s-%(time)s.jsonlines'
