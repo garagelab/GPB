@@ -4,3 +4,5 @@ dropin.cache
 .ropeproject
 *log
 .gpbenv
+gpbscraper/*.jsonlines
+gpbscraper/scrapy.cfg
