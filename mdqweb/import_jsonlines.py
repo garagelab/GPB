@@ -107,7 +107,7 @@ def import_jsonlines(instream):
         elif r[0] == 'CompraLineaItem':
             compra_lineas.append(r[1])
         else:
-            logger.warning('Unknown object type in jsonline: %s', line)
+            logger.warning('Unknown object type in jsonline: %s', line.rstrip())
 
     import_compras(compras)
     import_compra_lineas(compra_lineas)
