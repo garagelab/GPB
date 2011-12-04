@@ -114,7 +114,7 @@ INSTALLED_APPS = (
     'django.contrib.flatpages',
 )
 
-CACHE_BACKEND = 'file:///tmp/gpb_django_cache'
+CACHE_BACKEND = 'file:///tmp/mdqweb_django_cache'
 
 try:
     from settings_local import *
