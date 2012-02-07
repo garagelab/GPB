@@ -13,7 +13,7 @@ from django.db.models import ObjectDoesNotExist
 from django.db.models import Q
 from django.db import transaction, connection
 
-import moronweb.core.models as models
+import core.models as models
 
 logger = logging.getLogger(__name__)
 
@@ -57,8 +57,8 @@ def to_compralinea_entity(cl):
 
     try:
         compra = models.Compra.objects.get( \
-            orden_compra=int(cl['orden_compra']))#, \
-            #fecha__year=os.environ.get('ANIO', datetime.datetime.now().year))
+            orden_compra=int(cl['orden_compra']), \
+            fecha__year=os.environ.get('ANIO', datetime.datetime.now().year))
     except ObjectDoesNotExist:
         #logger.warning('No compras found related to compralinea: %r', cl)
         return None
@@ -68,51 +68,83 @@ def to_compralinea_entity(cl):
                                  cantidad=int(cant.groups()[0]),
                                  detalle=cl['detalle'])
 
+def to_proveedor_entity(p):
+    # {
+    #    "nombre": "ALECO S.R.L.",
+    #    "cuit": "30-64832542-4"
+    # }
+    proveedor, proveedor_created = \
+            models.Proveedor.objects.get_or_create(nombre=p['nombre'])
+    proveedor.cuit = p['cuit']
+    return proveedor
+
 def import_compras(compras):
     imported_compras = set()
     for i in compras:
         try:
             orden_compra = int(i['orden_compra'])
             if orden_compra not in imported_compras:
-                continue
-            compra = to_compra_entity(i)
-            imported_compras.add(orden_compra)
-            compra.save()
-            transaction.commit_on_success(compra)
+                compra = to_compra_entity(i)
+                imported_compras.add(orden_compra)
+                compra.save()
+                transaction.commit_on_success(compra)
         except Exception:
             logger.exception('Failed to import compra: %r', i)
-    logger.info('Successfully imported %d CompraItems', len(compras))
+    logger.info('Successfully imported %d CompraItems', len(imported_compras))
 
 def import_compra_lineas(compra_lineas):
+    import_count = 0
     for i in compra_lineas:
         try:
             compralinea = to_compralinea_entity(i)
-            if compralinea is None:
-                continue
-            compralinea.save()
-            transaction.commit_on_success(compralinea)
+            if compralinea is not None:
+                compralinea.save()
+                transaction.commit_on_success(compralinea)
+                import_count += 1
         except Exception:
             logger.exception('Failed to import compralinea: %r', i)
-    logger.info('Successfully imported %d CompraLineaItems', len(compra_lineas))
+    logger.info('Successfully imported %d CompraLineaItems', import_count)
+
+def import_proveedores(proveedores):
+    imported_proveedores = set()
+    for i in proveedores:
+        try:
+            nombre = i['nombre']
+            if nombre not in imported_proveedores:
+                proveedor = to_proveedor_entity(i)
+                imported_proveedores.add(nombre)
+                proveedor.save()
+                transaction.commit_on_success(proveedor)
+        except Exception:
+            logger.exception('Failed to import proveedor: %r', i)
+    logger.info('Successfully imported %d ProveedorItems', \
+            len(imported_proveedores))
+
 
 def import_jsonlines(instream):
     """ Imports jsonlines into database using available models """
-    compras = []
-    compra_lineas = []
+    items = {
+        'CompraItem': [],
+        'CompraLineaItem': [],
+        'ProveedorItem': [],
+    }
 
     for line in instream:
         r = json.loads(line)
-        if r[0] == 'CompraItem':
-            compras.append(r[1])
-        elif r[0] == 'CompraLineaItem':
-            compra_lineas.append(r[1])
+        if r[0] in items:
+            items[r[0]].append(r[1])
         else:
             logger.warning('Unknown object type in jsonline: %s', line.rstrip())
 
-    import_compras(compras)
-    import_compra_lineas(compra_lineas)
+    import_compras(items['CompraItem'])
+    import_compra_lineas(items['CompraLineaItem'])
+    import_proveedores(items['ProveedorItem'])
+
+    connection._commit()
+    connection.close()
 
 def main(program, *filenames):
+    """ Main program """
     if not filenames:
         import_jsonlines(sys.stdin)
     else:
