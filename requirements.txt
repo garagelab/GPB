@@ -1,5 +1,6 @@
 Django==1.2.1
 django_extensions==0.4
-psycopg2==2.2.1
-Scrapy==0.14
+psycopg2==2.4.6
+Scrapy==0.16.3
 South==0.7.1
+simplejson=2.6.2
