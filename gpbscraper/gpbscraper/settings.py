@@ -15,6 +15,7 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'moronweb')))
+#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'mdqweb')))
 
 
 BOT_NAME = 'gpbscraper'
@@ -31,6 +32,7 @@ DEFAULT_REQUEST_HEADERS = {'Accept-Language':'es'}
 #ITEM_PIPELINES = ['gpbscraper.pipelines.ComprasPersisterPipeline']
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'moronweb.settings')
+#os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mdqweb.settings')
 
 SCHEDULER_MIDDLEWARES = {
     'scrapy.contrib.schedulermiddleware.duplicatesfilter.DuplicatesFilterMiddleware': None,
@@ -47,4 +49,4 @@ FEED_EXPORTERS = {
 FEED_FORMAT = 'typedjsonlines'
 FEED_URI = 'gpbscraper-%(name)s-%(time)s.jsonlines'
 
-TRIMESTRE = 3
+TRIMESTRE = 2
